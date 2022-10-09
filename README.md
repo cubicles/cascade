@@ -1,5 +1,7 @@
 # cascade
 
+Algoritmo value iteration
+
 # Proximos pendientes
 
 - Crear latex + adjuntar link
