@@ -1,4 +1,4 @@
- Initialize Markov Decision Process model
+# Initialize Markov Decision Process model
 actions = (0, 1)  # actions (0=left, 1=right)
 states = (0, 1, 2, 3, 4)  # states (tiles)
 rewards = [-1, -1, 10, -1, -1]  # Direct rewards per state
@@ -14,15 +14,15 @@ probs = [
 
 # Set value iteration parameters
 max_iter = 10000  # Maximum number of iterations
-delta = 0.001#1e-400  # Error tolerance
+delta = 1e-400  # Error tolerance
 V = [0, 0, 0, 0, 0]  # Initialize values
 pi = [None, None, None, None, None]  # Initialize policy
+
 
 # Start value iteration
 for i in range(max_iter):
     max_diff = 0  # Initialize max difference
     V_new = [0, 0, 0, 0, 0]  # Initialize values
-    # A PARTIR DE ACA MODIFICAR PARA VI O ALGO EFICIENTE
     for s in states:
         max_val = 0
         for a in actions:
@@ -30,15 +30,14 @@ for i in range(max_iter):
             # Compute state value
             val = rewards[s]  # Get direct reward
             for s_next in states:
-                val += probs[s][s_next][a] * (
-                    gamma * V[s_next]
+                val += probs[s][s_next][a] * (gamma * V[s_next]
                 )  # Add discounted downstream values
 
             # Store value best action so far
             max_val = max(max_val, val)
 
             # Update best policy
-            if V_new[s] < val:
+            if V[s] < val:
                 pi[s] = actions[a]  # Store action with highest value
 
         V_new[s] = max_val  # Update value with highest value
@@ -51,8 +50,4 @@ for i in range(max_iter):
 
     # If diff smaller than threshold delta for all states, algorithm terminates
     if max_diff < delta:
-        print(i)
         break
-
-def board(tipo: str): # Debe poder arrojar uno de los 3 sc: 5x25, 10x100, etc
-    return board
