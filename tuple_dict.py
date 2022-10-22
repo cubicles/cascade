@@ -19,5 +19,10 @@ array_test = np.loadtxt('Ambientes/Ambiente1/Action_Sur.txt')
 array_dict = {}
 for element in array_test:
     array_dict[(int(element[0]), int(element[1]))] = element[2]
+
+try:
+    print(array_dict[(1 , 2000)]) # (1, 2000) is not a valid key
+except:
+    print('Key error')
     
 

@@ -60,72 +60,54 @@ def init_mdp(ambiente: int, delta_value: float):
 
 def init_ftran(ambiente: int):
     PATH = f'Ambientes/Ambiente{ambiente}'
-    df_norte = pd.read_csv(f'{PATH}/Action_Norte.txt', sep="   ", header=None)
-    df_este = pd.read_csv(f'{PATH}/Action_Este.txt', sep="   ", header=None)
-    df_oeste = pd.read_csv(f'{PATH}/Action_Oeste.txt', sep="   ", header=None)
-    df_sur = pd.read_csv(f'{PATH}/Action_Sur.txt', sep="   ", header=None)
-    df_norte.columns = ['s', 's_next', 'p']
-    df_este.columns = ['s', 's_next', 'p']
-    df_oeste.columns = ['s', 's_next', 'p']
-    df_sur.columns = ['s', 's_next', 'p']
-    #df_list = [df_este, df_oeste, df_norte, df_sur]
+    array_norte = np.loadtxt(f'{PATH}/Action_Norte.txt')
+    array_sur = np.loadtxt(f'{PATH}/Action_Sur.txt')
+    array_este = np.loadtxt(f'{PATH}/Action_Este.txt')
+    array_oeste = np.loadtxt(f'{PATH}/Action_Oeste.txt')
 
-    df_norte = df_norte.astype({'s':'int'})
-    df_norte = df_norte.astype({'s_next':'int'})
-    df_este = df_este.astype({'s':'int'})
-    df_este = df_este.astype({'s_next':'int'})
-    df_oeste = df_oeste.astype({'s':'int'})
-    df_oeste = df_oeste.astype({'s_next':'int'})
-    df_sur = df_sur.astype({'s':'int'})
-    df_sur = df_sur.astype({'s_next':'int'})
-    return df_este, df_oeste, df_norte, df_sur
+    dict_norte = {}
+    dict_sur = {}
+    dict_este = {}
+    dict_oeste = {}
 
-def ftran(s: int, s_next: int, a: int, df_este: pd.DataFrame,
-                                       df_oeste: pd.DataFrame,
-                                       df_norte: pd.DataFrame,
-                                       df_sur: pd.DataFrame) -> float:
+    for element in array_norte:
+        dict_norte[(int(element[0]), int(element[1]))] = element[2]
+    for element in array_sur:
+        dict_sur[(int(element[0]), int(element[1]))] = element[2]
+    for element in array_este:
+        dict_este[(int(element[0]), int(element[1]))] = element[2]
+    for element in array_oeste:
+        dict_oeste[(int(element[0]), int(element[1]))] = element[2]
+
+    return dict_norte, dict_sur, dict_este, dict_oeste
+
+def ftran(s: int, s_next: int, a: int, dict_norte, dict_sur, dict_este, dict_oeste):
     ''' ftran
         Recibe s, s', a (estado inicial, final y accion) y los dataframes
     '''
     # 1: este, 2: oeste, 3: norte, 4: sur
     if a == 1:
-        df_new = df_este[df_este['s'] == s][df_este['s_next'] == s_next]
-        if df_new.shape[0] == 0:
+        try:
+            return dict_este[(s, s_next)]
+        except:
             return 0
-        elif df_new.shape[0] == 1:
-            return df_new['p'].values[0]
-        else:
-            print('ERROR EN LA FUNCION DE TRANSICION')
+    elif a == 2:
+        try:
+            return dict_oeste[(s, s_next)]
+        except:
             return 0
-    if a == 2:
-        df_new = df_oeste[df_oeste['s'] == s][df_oeste['s_next'] == s_next]
-        if df_new.shape[0] == 0:
+    elif a == 3:
+        try:
+            return dict_norte[(s, s_next)]
+        except:
             return 0
-        elif df_new.shape[0] == 1:
-            return df_new['p'].values[0]
-        else:
-            print('ERROR EN LA FUNCION DE TRANSICION')
-            return 0
-    if a == 3:
-        df_new = df_norte[df_norte['s'] == s][df_norte['s_next'] == s_next]
-        if df_new.shape[0] == 0:
-            return 0
-        elif df_new.shape[0] == 1:
-            return df_new['p'].values[0]
-        else:
-            print('ERROR EN LA FUNCION DE TRANSICION')
-            return 0
-    if a == 4:
-        df_new = df_sur[df_sur['s'] == s][df_sur['s_next'] == s_next]
-        if df_new.shape[0] == 0:
-            return 0
-        elif df_new.shape[0] == 1:
-            return df_new['p'].values[0]
-        else:
-            print('ERROR EN LA FUNCION DE TRANSICION')
+    elif a == 4:
+        try:
+            return dict_sur[(s, s_next)]
+        except:
             return 0
 
-def algo_vi(actions, states, cost, gamma, V, delta, df_este, df_oeste, df_norte, df_sur):
+def algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste):
     ''' algo_vi
         Recibe acciones, estados, costo, gamma y valores V, corre el algo
         value iteration y devuelve la lista de valores para los estados
@@ -139,7 +121,9 @@ def algo_vi(actions, states, cost, gamma, V, delta, df_este, df_oeste, df_norte,
             for a in actions:
                 val = cost[s-1]
                 for s_next in states:
-                    val += ftran(s, s_next, a, df_este, df_oeste, df_norte, df_sur) * (gamma * V[s_next-1])
+                    val += ftran(s, s_next, a,
+                           dict_norte, dict_sur, dict_este, dict_oeste)\
+                           * (gamma * V[s_next-1])
 
                 # Min value
                 min_value = min(min_value, val) 
@@ -168,7 +152,7 @@ def algo_eficiente(mdp: str):
 
 if __name__ == '__main__':
     ambiente = 1
-    df_este, df_oeste, df_norte, df_sur = init_ftran(ambiente)
+    dict_norte, dict_sur, dict_este, dict_oeste = init_ftran(ambiente)
     actions, states, cost, gamma, V, delta = init_mdp(ambiente, 0.001)
-    V, max_iter = algo_vi(actions, states, cost, gamma, V, delta, df_este, df_oeste, df_norte, df_sur)
+    V, max_iter = algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste)
     print("cascada")
