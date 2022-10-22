@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 def init_mdp(ambiente: int, delta_value: float):
     ''' Inicializa mdp: estados, recompensas, transicion, heuristicas
@@ -28,25 +27,25 @@ def init_mdp(ambiente: int, delta_value: float):
 
     # rewards
     if ambiente == 1:
-        cost = [1] * 5*25
-        cost[101] = 0
+        cost = [1.0] * 5*25
+        cost[101] = 0.0
     elif ambiente == 2:
-        cost = [1] * 20*100
-        cost[1901] = 0
+        cost = [1.0] * 20*100
+        cost[1901] = 0.0
     elif ambiente == 3:
-        cost = [1] * 50*250
-        cost[12251] = 0
+        cost = [1.0] * 50*250
+        cost[12251] = 0.0
     else:
         cost = 0
         print("Error en la asignacion de costos")
 
     # estado inicial
     if ambiente == 1:
-        V = [0] * 5*25
+        V = [0.0] * 5*25
     elif ambiente == 2:
-        V = [0] * 5*25
+        V = [0.0] * 20*100
     elif ambiente == 3:
-        V = [0] * 5*25
+        V = [0.0] * 50*250
     else:
         V = 0
         print("Error en los valores iniciales")
@@ -112,35 +111,37 @@ def algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_e
         Recibe acciones, estados, costo, gamma y valores V, corre el algo
         value iteration y devuelve la lista de valores para los estados
     '''
+    max_diff_value = 0
     max_iter = 10000
-    for i in range (max_iter):
-        max_diff = 1
+    for i in range (100):
+        max_diff = 0.0
         V_new = V.copy()
         for s in states:
-            min_value = 100
+            min_value = 100.0
             for a in actions:
                 val = cost[s-1]
                 for s_next in states:
                     val += ftran(s, s_next, a,
                            dict_norte, dict_sur, dict_este, dict_oeste)\
-                           * (gamma * V[s_next-1])
+                           * (0.9 * V[s_next-1])
 
                 # Min value
                 min_value = min(min_value, val) 
 
             # Calcula max_diff para comparacion con delta
             V_new[s-1] = min_value
+            #print(min_value)
             max_diff = max(max_diff, abs(V[s-1] - V_new[s-1]))
 
         # Actualiza valores para la siguiente iteracion
         V = V_new
-
+        print(f'iteracion: {i}, delta: {max_diff}')
         # Compara max_diff vs delta
         if max_diff < delta:
+            max_diff_value = max_diff
             break
-        print(i)
-        print(max_diff)
-    return V, max_iter
+        #print(f'iteracion: {i}')
+    return V, max_iter, max_diff_value
 
 def algo_eficiente(mdp: str):
     ''' Recibe un mdp board y devuelve una matriz de valores
@@ -151,8 +152,9 @@ def algo_eficiente(mdp: str):
     return 0
 
 if __name__ == '__main__':
+    delta = 0.001
     ambiente = 1
     dict_norte, dict_sur, dict_este, dict_oeste = init_ftran(ambiente)
-    actions, states, cost, gamma, V, delta = init_mdp(ambiente, 0.001)
-    V, max_iter = algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste)
+    actions, states, cost, gamma, V, delta = init_mdp(ambiente, delta)
+    V, max_iter, max_diff = algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste)
     print("cascada")
