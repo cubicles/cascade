@@ -143,13 +143,33 @@ def algo_vi(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_e
         #print(f'iteracion: {i}')
     return V, max_iter, max_diff_value
 
-def algo_eficiente(mdp: str):
-    ''' Recibe un mdp board y devuelve una matriz de valores
-        Algoritmo lao
-    '''
-    # Recibe lista de listas
-    # Retorna lista de listas con valores de politica
-    return 0
+def lao(actions, states, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste):
+    # Hipergrafo
+    G = [1]
+    G_n = []
+    for state in G:
+        for a in actions:
+            for s in states:
+                aux = ftran(state, s, a, dict_norte, dict_sur, dict_este, dict_oeste)
+                if aux > 0:
+                    print('Here')
+                    G_n.append(s)
+
+    # Z
+    Z = set()
+    for i in G_n:
+        Z.add(i)
+
+    # Value Iteration
+    V, max_iter, max_diff_value = algo_vi(actions, Z, cost, gamma, V, delta, dict_norte, dict_sur, dict_este, dict_oeste)
+
+    # Optimal route
+    min_value = 100
+    for state in Z:
+        min_value = min(V[state-1], min_value)
+
+    return G_n, Z, V, min_value
+
 
 if __name__ == '__main__':
     delta = 0.001
